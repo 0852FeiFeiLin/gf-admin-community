@@ -1,6 +1,11 @@
 package sys_enum_user
 
-import "github.com/kysion/base-library/utility/enum"
+import (
+	"context"
+
+	"github.com/kysion/base-library/utility/enum"
+	"github.com/gogf/gf/v2/frame/g"
+)
 
 type StateEnum enum.IEnumCode[int]
 
@@ -28,5 +33,7 @@ func (e state) New(code int, description string) StateEnum {
 		(code&State.Canceled.Code()) == State.Canceled.Code() {
 		return enum.New[StateEnum](code, description)
 	}
-	panic("User.State.New: error")
+	// 记录无效的enum code，但返回一个默认值而不是panic
+	g.Log().Error(context.Background(), "User.State.New: 无效的code", g.Map{"code": code, "description": description})
+	return enum.New(code, description) // 返回原始的enum，让调用方决定如何处理
 }

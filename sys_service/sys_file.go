@@ -66,7 +66,9 @@ var (
 
 func File() IFile {
 	if localFile == nil {
-		panic("implement not found for interface IFile, forgot register?")
+		// 记录错误但不panic，让调用方处理
+		g.Log().Error(context.Background(), "IFile服务未注册，请检查服务初始化顺序")
+		return nil
 	}
 	return localFile
 }

@@ -33,7 +33,7 @@ import (
 	"github.com/kysion/base-library/utility/base_funs"
 	"github.com/kysion/base-library/utility/base_verify"
 	"github.com/kysion/base-library/utility/daoctl"
-	"github.com/kysion/base-library/utility/en_crypto"
+	"github.com/SupenBysz/gf-admin-community/utility/en_crypto"
 	"github.com/kysion/base-library/utility/kconv"
 	"github.com/kysion/base-library/utility/masker"
 )
@@ -387,17 +387,14 @@ func (s *sSysUser) CreateUser(ctx context.Context, info sys_model.UserInnerRegis
 		data.Id = customId[0]
 	}
 
-	// 使用security包的密码加密方法
-	hashedPassword, salt, pwdErr := security.CryptoPasswordWithRandomSalt(ctx, info.Password)
-	if pwdErr != nil {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, pwdErr, "error_password_encryption_failed", sys_dao.SysUser.Table())
+	// 使用bcrypt加密密码，支持从旧scrypt迁移
+	pwdHash, err := en_crypto.PwdHash(info.Password, gconv.String(data.Id))
+	if err != nil {
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "error_password_encryption_failed", sys_dao.SysUser.Table())
 	}
 
 	// 密码赋值
-	data.Password = hashedPassword
-	data.Salt = salt
-
-	var err error
+	data.Password = pwdHash
 	err = g.DB().Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
 		// 创建前
 		g.Try(ctx, func(ctx context.Context) {
@@ -530,25 +527,11 @@ func (s *sSysUser) CheckPassword(ctx context.Context, userId int64, password str
 	// 检验密码
 	user, _ := daoctl.GetByIdWithError[sys_entity.SysUser](sys_dao.SysUser.Ctx(ctx), userInfo.Id)
 
-	// 如果用户有盐值，使用新的验证方式
-	if user.Salt != "" {
-		err := security.VerifyPasswordWithSalt(ctx, password, user.Password, user.Salt)
-		if err != nil {
-			return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "error_invalid_login_password")
-		}
-	} else {
-		// 兼容旧版本的验证方式
-		pwdHash, _ := en_crypto.PwdHash(password, gconv.String(userId))
-		if pwdHash != user.Password {
-			return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "error_invalid_login_password")
-		}
-	}
-
-	// 兼容旧版本的验证方式
+	// 使用增强的密码验证，支持从旧scrypt迁移到新bcrypt
 	salt := gconv.String(userId)
-	pwdHash, err := en_crypto.PwdHash(password, salt)
+	_, _, err := en_crypto.MigrateLegacyHash(password, user.Password, salt)
 	
-	return userInfo.Password == pwdHash, err
+	return err == nil, err
 }
 
 // HasSysUserByUsername 判断用户名是否存在
@@ -714,19 +697,11 @@ func (s *sSysUser) UpdateUserPassword(ctx context.Context, info sys_model.Update
 	}
 
 	{
-		// 传入用户输入的原始密码，进行hash，看是否和数据库中原始密码一致
-		// 如果用户有盐值，使用新的验证方式
-		if sysUserInfo.Salt != "" {
-			err := security.VerifyPasswordWithSalt(ctx, info.OldPassword, sysUserInfo.Password, sysUserInfo.Salt)
-			if err != nil {
-				return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "error_invalid_old_password")
-			}
-		} else {
-			// 兼容旧版本的验证方式
-			hash1, _ := en_crypto.PwdHash(info.OldPassword, gconv.String(sysUserInfo.Id))
-			if sysUserInfo.Password != hash1 {
-				return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "error_invalid_old_password")
-			}
+		// 验证原密码是否正确，支持旧scrypt和新bcrypt
+		salt := gconv.String(sysUserInfo.Id)
+		_, _, err := en_crypto.MigrateLegacyHash(info.OldPassword, sysUserInfo.Password, salt)
+		if err != nil {
+			return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "error_invalid_old_password")
 		}
 	}
 
@@ -748,7 +723,7 @@ func (s *sSysUser) UpdateUserPassword(ctx context.Context, info sys_model.Update
 		}
 	}
 
-	pwdHash, _, err := security.CryptoPasswordWithRandomSalt(ctx, info.Password)
+	pwdHash, err := en_crypto.PwdHash(info.Password, gconv.String(sysUserInfo.Id))
 	if err != nil {
 		return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "error_password_encryption_failed")
 	}
@@ -795,9 +770,12 @@ func (s *sSysUser) ResetUserPassword(ctx context.Context, userId int64, password
 		if password != confirmPassword {
 			return false, gerror.NewCode(gcode.CodeValidationFailed, "error_password_mismatch")
 		}
+		
+		// 取盐 (bcrypt内置盐值管理)
+		salt := gconv.String(userId)
 
-		// 加密
-		pwdHash, _, err := security.CryptoPasswordWithRandomSalt(ctx, password)
+		// 使用bcrypt加密
+		pwdHash, err := en_crypto.PwdHash(password, salt)
 		if err != nil {
 			return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "error_password_encryption_failed")
 		}

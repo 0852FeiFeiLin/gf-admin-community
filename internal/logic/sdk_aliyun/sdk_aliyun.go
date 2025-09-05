@@ -44,21 +44,29 @@ func New() sys_service.ISdkAliyun {
 
 // GetAliyunSdkToken 通过SDK获取Token （SDK获取方式）
 func (s *sSdkAliyun) GetAliyunSdkToken(ctx context.Context, tokenInfo sys_model.AliyunSdkConfToken, err error) {
-	// client, err := sdk.NewClientWithAccessKey("cn-shanghai", "<yourAccessKey Id>", "<yourAccessKey Secret>")
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// request := requests.NewCommonRequest()
-	// request.Method = "POST"
-	// request.Domain = "nls-meta.cn-shanghai.aliyuncs.com"
-	// request.ApiName = "CreateToken"
-	// request.Version = "2019-02-28"
-	// response, err := client.ProcessCommonRequest(request)
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// fmt.Print(response.GetHttpStatus())
-	// fmt.Print(response.GetHttpContentString())
+	// TODO: 实现阿里云SDK Token获取逻辑
+	// 示例实现（需要根据实际需求调整）:
+	/*
+	client, err := sdk.NewClientWithAccessKey("cn-shanghai", "<yourAccessKey Id>", "<yourAccessKey Secret>")
+	if err != nil {
+		g.Log().Error(ctx, "创建阿里云SDK客户端失败", err)
+		return
+	}
+	request := requests.NewCommonRequest()
+	request.Method = "POST"
+	request.Domain = "nls-meta.cn-shanghai.aliyuncs.com"
+	request.ApiName = "CreateToken"
+	request.Version = "2019-02-28"
+	response, err := client.ProcessCommonRequest(request)
+	if err != nil {
+		g.Log().Error(ctx, "阿里云SDK请求失败", err)
+		return
+	}
+	g.Log().Info(ctx, "阿里云SDK响应", g.Map{
+		"status": response.GetHttpStatus(),
+		"content": response.GetHttpContentString(),
+	})
+	*/
 }
 
 // GetAliyunSdkConfList 获取阿里云SDK应用配置列表

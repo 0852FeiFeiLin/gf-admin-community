@@ -6,9 +6,12 @@
 package sys_service
 
 import (
+	"context"
+
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_hook"
-	casbin "github.com/casbin/casbin/v2"
+	"github.com/casbin/casbin/v2"
+	"github.com/gogf/gf/v2/net/ghttp"
 )
 
 type (
@@ -46,7 +49,9 @@ var (
 
 func Casbin() ICasbin {
 	if localCasbin == nil {
-		panic("implement not found for interface ICasbin, forgot register?")
+		// 记录错误但不panic，让调用方处理
+		g.Log().Error(context.Background(), "ICasbin服务未注册，请检查服务初始化顺序")
+		return nil
 	}
 	return localCasbin
 }

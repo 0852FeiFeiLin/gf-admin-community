@@ -52,7 +52,9 @@ var (
 
 func SysAuth() ISysAuth {
 	if localSysAuth == nil {
-		panic("implement not found for interface ISysAuth, forgot register?")
+		// 记录错误但不panic，让调用方处理
+		g.Log().Error(context.Background(), "ISysAuth服务未注册，请检查服务初始化顺序")
+		return nil
 	}
 	return localSysAuth
 }

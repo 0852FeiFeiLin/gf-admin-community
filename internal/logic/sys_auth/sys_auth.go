@@ -27,7 +27,7 @@ import (
 	"github.com/kysion/base-library/base_model/base_enum"
 	"github.com/kysion/base-library/utility/base_verify"
 	"github.com/kysion/base-library/utility/daoctl"
-	"github.com/kysion/base-library/utility/en_crypto"
+	"github.com/SupenBysz/gf-admin-community/utility/en_crypto"
 )
 
 type hookInfo sys_model.KeyValueT[int64, sys_hook.AuthHookInfo]
@@ -105,13 +105,28 @@ func (s *sSysAuth) Login(ctx context.Context, req sys_model.LoginInfo, needCaptc
 		return nil, gerror.NewCode(gcode.CodeValidationFailed, g.I18n().T(ctx, "error_account_not_exists"))
 	}
 
-	// 判断是否相等
-	if ok, err := sys_service.SysUser().CheckPassword(ctx, sysUserInfo.Id, req.Password); !ok {
-		if err != nil {
-			return nil, err
-		}
+	// 取盐(用于向后兼容旧密码)
+	salt := gconv.String(sysUserInfo.Id)
+
+	// 尝试迁移旧密码或验证新密码
+	newHash, needUpdate, err := en_crypto.MigrateLegacyHash(req.Password, sysUserInfo.Password, salt)
+	if err != nil {
 		return nil, gerror.New(g.I18n().T(ctx, "error_password_incorrect"))
 	}
+	
+	// 如果需要更新密码哈希(从scrypt迁移到bcrypt)
+	if needUpdate {
+		// 更新数据库中的密码哈希
+		_, err = sys_dao.SysUser.Ctx(ctx).Where(sys_dao.SysUser.Columns().Id, sysUserInfo.Id).
+			Update(g.Map{sys_dao.SysUser.Columns().Password: newHash})
+		if err != nil {
+			g.Log().Error(ctx, "更新用户密码哈希失败", err)
+			// 即使更新失败也不影响登录，只记录日志
+		} else {
+			g.Log().Info(ctx, "用户密码哈希已升级到bcrypt", g.Map{"userId": sysUserInfo.Id})
+		}
+	}
+
 	res := sys_model.LoginRes{}
 
 	token, err := s.InnerLogin(ctx, sysUserInfo)
@@ -688,11 +703,15 @@ func (s *sSysAuth) ResetPassword(ctx context.Context, password string, confirmPa
 	if password != confirmPassword {
 		return false, gerror.NewCode(gcode.CodeValidationFailed, g.I18n().T(ctx, "error_passwords_not_match"))
 	}
-	// 取盐
+	// bcrypt不需要手动处理盐值，但为了保持API一致性，仍然传入salt参数
 	salt := gconv.String(sysUserInfo.Id)
 
-	// 加密
-	pwdHash, _ := en_crypto.PwdHash(password, salt)
+	// 使用bcrypt加密新密码
+	pwdHash, err := en_crypto.PwdHash(password, salt)
+	if err != nil {
+		return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "密码加密失败")
+	}
+	
 	// 业务层自定义密码加密规则
 	if sys_service.SysUser().GetCryptoPasswordFunc() != nil {
 		pwdHash = sys_service.SysUser().GetCryptoPasswordFunc()(ctx, password, *sysUserInfo.SysUser)
