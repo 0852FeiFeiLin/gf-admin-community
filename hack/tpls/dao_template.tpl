@@ -6,15 +6,15 @@ package sys_dao
 
 import (
 	"github.com/kysion/base-library/utility/daoctl/dao_interface"
-	"{TplImportPrefix}/internal"
+	"{{.TplImportPrefix}}/internal"
 )
 
-type {TplTableNameCamelCase}Dao = dao_interface.TIDao[internal.{TplTableNameCamelCase}Columns]
+type {{.TplTableNameCamelCase}}Dao = dao_interface.TIDao[internal.{{.TplTableNameCamelCase}}Columns]
 
-func New{TplTableNameCamelCase}(dao ...dao_interface.IDao) {TplTableNameCamelCase}Dao {
-	return ({TplTableNameCamelCase}Dao)(internal.New{TplTableNameCamelCase}Dao(dao...))
+func New{{.TplTableNameCamelCase}}(dao ...dao_interface.IDao) {{.TplTableNameCamelCase}}Dao {
+	return ({{.TplTableNameCamelCase}}Dao)(internal.New{{.TplTableNameCamelCase}}Dao(dao...))
 }
 
 var (
-    {TplTableNameCamelCase} = New{TplTableNameCamelCase}()
+    {{.TplTableNameCamelCase}} = New{{.TplTableNameCamelCase}}()
 )

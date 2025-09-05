@@ -5,27 +5,27 @@
 
 package sys_service
 
-{Imports}
+{{.Imports}}
 `
 
 const TemplateGenServiceContentInterface = `
-{InterfaceName} interface {
-	{FuncDefinition}
+{{.InterfaceName}} interface {
+	{{.FuncDefinition}}
 }
 `
 
 const TemplateGenServiceContentVariable = `
-local{StructName} {InterfaceName}
+local{{.StructName}} {{.InterfaceName}}
 `
 
 const TemplateGenServiceContentRegister = `
-func {StructName}() {InterfaceName} {
-	if local{StructName} == nil {
-		panic("implement not found for interface {InterfaceName}, forgot register?")
+func {{.StructName}}() {{.InterfaceName}} {
+	if local{{.StructName}} == nil {
+		panic("implement not found for interface {{.InterfaceName}}, forgot register?")
 	}
-	return local{StructName}
+	return local{{.StructName}}
 }
 
-func Register{StructName}(i {InterfaceName}) {
-	local{StructName} = i
+func Register{{.StructName}}(i {{.InterfaceName}}) {
+	local{{.StructName}} = i
 }

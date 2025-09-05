@@ -38,7 +38,6 @@ type SysUserColumns struct {
 	DeletedAt  string //
 	Email      string // 邮箱
 	InviteCode string // 邀请码，代表通过这个邀请码注册
-	Salt       string // 密码盐值
 }
 
 // sysUserColumns holds the columns for table sys_user.
@@ -54,7 +53,6 @@ var sysUserColumns = SysUserColumns{
 	DeletedAt:  "deleted_at",
 	Email:      "email",
 	InviteCode: "invite_code",
-	Salt:       "salt",
 }
 
 // NewSysUserDao creates and returns a new DAO object for table data access.
