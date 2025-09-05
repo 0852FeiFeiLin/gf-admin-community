@@ -2,8 +2,6 @@ module github.com/SupenBysz/gf-admin-community
 
 go 1.24.0
 
-toolchain go1.24.1
-
 require (
 	github.com/aliyun/alibaba-cloud-sdk-go v1.63.106
 	github.com/baidubce/app-builder/go/appbuilder v1.0.4
