@@ -9,7 +9,6 @@ import (
 	"context"
 
 	"github.com/SupenBysz/gf-admin-community/sys_model"
-	"github.com/gogf/gf/v2/frame/g"
 )
 
 type (
@@ -31,9 +30,7 @@ var (
 
 func SdkHuawei() ISdkHuawei {
 	if localSdkHuawei == nil {
-		// 记录错误但不panic，让调用方处理
-		g.Log().Error(context.Background(), "ISdkHuawei服务未注册，请检查服务初始化顺序")
-		return nil
+		panic("implement not found for interface ISdkHuawei, forgot register?")
 	}
 	return localSdkHuawei
 }

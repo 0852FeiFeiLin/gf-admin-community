@@ -18,6 +18,7 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_hook"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
+	"github.com/SupenBysz/gf-admin-community/utility/en_crypto"
 	"github.com/SupenBysz/gf-admin-community/utility/idgen"
 	"github.com/SupenBysz/gf-admin-community/utility/security"
 	"github.com/gogf/gf/v2/container/garray"
@@ -33,7 +34,6 @@ import (
 	"github.com/kysion/base-library/utility/base_funs"
 	"github.com/kysion/base-library/utility/base_verify"
 	"github.com/kysion/base-library/utility/daoctl"
-	"github.com/SupenBysz/gf-admin-community/utility/en_crypto"
 	"github.com/kysion/base-library/utility/kconv"
 	"github.com/kysion/base-library/utility/masker"
 )
@@ -529,8 +529,8 @@ func (s *sSysUser) CheckPassword(ctx context.Context, userId int64, password str
 
 	// 使用增强的密码验证，支持从旧scrypt迁移到新bcrypt
 	salt := gconv.String(userId)
-	_, _, err := en_crypto.MigrateLegacyHash(password, user.Password, salt)
-	
+	_, _, err = en_crypto.MigrateLegacyHash(password, user.Password, salt)
+
 	return err == nil, err
 }
 
@@ -770,7 +770,7 @@ func (s *sSysUser) ResetUserPassword(ctx context.Context, userId int64, password
 		if password != confirmPassword {
 			return false, gerror.NewCode(gcode.CodeValidationFailed, "error_password_mismatch")
 		}
-		
+
 		// 取盐 (bcrypt内置盐值管理)
 		salt := gconv.String(userId)
 

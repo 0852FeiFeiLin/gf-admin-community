@@ -36,16 +36,16 @@ type (
 		Middleware(r *ghttp.Request)
 		// MakeSession 构建会话
 		MakeSession(ctx context.Context, tokenString string) *sys_model.JwtCustomClaims
-		
-		// 增强安全功能
 		// GenerateEnhancedToken 生成增强安全token
-		GenerateEnhancedToken(ctx context.Context, user *sys_model.SysUser, deviceFingerprint, userAgent, ip string) (response *sys_model.TokenInfo, err error)
+		GenerateEnhancedToken(ctx context.Context, user *sys_model.SysUser, deviceFingerprint string, userAgent string, ip string) (response *sys_model.TokenInfo, err error)
+		// CreateEnhancedToken 创建增强token
+		CreateEnhancedToken(claims *sys_model.EnhancedJwtCustomClaims) (string, error)
 		// RefreshTokenWithRotation 带轮换的token刷新
-		RefreshTokenWithRotation(ctx context.Context, oldToken, deviceFingerprint, userAgent, ip string) (response *sys_model.TokenInfo, err error)
+		RefreshTokenWithRotation(ctx context.Context, oldToken string, deviceFingerprint string, userAgent string, ip string) (response *sys_model.TokenInfo, err error)
 		// RevokeAllUserTokens 撤销用户所有token
 		RevokeAllUserTokens(ctx context.Context, userId int64) error
 		// ValidateTokenSecurity 验证token安全性
-		ValidateTokenSecurity(ctx context.Context, tokenString, deviceFingerprint, userAgent, ip string) (bool, error)
+		ValidateTokenSecurity(ctx context.Context, tokenString string, deviceFingerprint string, userAgent string, ip string) (bool, error)
 		// GetActiveTokenCount 获取用户活跃token数量
 		GetActiveTokenCount(ctx context.Context, userId int64) (int, error)
 	}
@@ -57,9 +57,7 @@ var (
 
 func Jwt() IJwt {
 	if localJwt == nil {
-		// 记录错误但不panic，让调用方处理
-		g.Log().Error(context.Background(), "IJwt服务未注册，请检查服务初始化顺序")
-		return nil
+		panic("implement not found for interface IJwt, forgot register?")
 	}
 	return localJwt
 }

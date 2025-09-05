@@ -20,9 +20,9 @@ type (
 	ISysUser interface {
 		// InstallHook 安装Hook
 		InstallHook(event sys_enum.UserEvent, hookFunc sys_hook.UserHookFunc) int64
-		// SetCryptoPasswordFunc 用于业务端自定义密码规则
+		// SetCryptoPasswordFunc 用于业务端自定义密码规则 (已废弃，使用security包的密码加密方法)
 		SetCryptoPasswordFunc(f func(ctx context.Context, passwordStr string, user ...sys_entity.SysUser) (pwdEncode string))
-		// GetCryptoPasswordFunc 应用业务端自定义密码规则
+		// GetCryptoPasswordFunc 应用业务端自定义密码规则 (已废弃，使用security包的密码加密方法)
 		GetCryptoPasswordFunc() func(ctx context.Context, passwordStr string, user ...sys_entity.SysUser) (pwdEncode string)
 		// UnInstallHook 卸载Hook
 		UnInstallHook(savedHookId int64)
@@ -96,9 +96,7 @@ var (
 
 func SysUser() ISysUser {
 	if localSysUser == nil {
-		// 记录错误但不panic，让调用方处理
-		g.Log().Error(context.Background(), "ISysUser服务未注册，请检查服务初始化顺序")
-		return nil
+		panic("implement not found for interface ISysUser, forgot register?")
 	}
 	return localSysUser
 }

@@ -9,7 +9,6 @@ import (
 	"context"
 
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
-	"github.com/gogf/gf/v2/frame/g"
 )
 
 type (
@@ -37,9 +36,7 @@ var (
 
 func SysLogs() ISysLogs {
 	if localSysLogs == nil {
-		// 记录错误但不panic，让调用方处理
-		g.Log().Error(context.Background(), "ISysLogs服务未注册，请检查服务初始化顺序")
-		return nil
+		panic("implement not found for interface ISysLogs, forgot register?")
 	}
 	return localSysLogs
 }

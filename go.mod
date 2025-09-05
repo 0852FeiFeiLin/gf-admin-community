@@ -13,7 +13,7 @@ require (
 	github.com/gogf/gf/v2 v2.9.0
 	github.com/golang-jwt/jwt/v4 v4.5.2
 	github.com/google/uuid v1.6.0
-	github.com/kysion/base-library v0.3.5
+	github.com/kysion/base-library v0.3.6
 	github.com/kysion/oss-library v0.2.13
 	github.com/kysion/sms-library v0.2.13
 	github.com/lionsoul2014/ip2region/binding/golang v0.0.0-20241220152942-06eb5c6e8230
@@ -22,6 +22,7 @@ require (
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.1146
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/faceid v1.0.1115
 	github.com/yitter/idgenerator-go v1.3.3
+	golang.org/x/crypto v0.37.0
 	golang.org/x/sync v0.13.0
 	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
 )
@@ -75,7 +76,6 @@ require (
 	go.opentelemetry.io/otel/metric v1.35.0 // indirect
 	go.opentelemetry.io/otel/sdk v1.35.0 // indirect
 	go.opentelemetry.io/otel/trace v1.35.0 // indirect
-	golang.org/x/crypto v0.37.0 // indirect
 	golang.org/x/image v0.26.0 // indirect
 	golang.org/x/net v0.39.0 // indirect
 	golang.org/x/sys v0.32.0 // indirect
@@ -87,8 +87,9 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
-replace (
-	github.com/kysion/base-library => ../kysion/base-library
-	github.com/kysion/oss-library => ../kysion/oss-library
-	github.com/kysion/sms-library => ../kysion/sms-library
-)
+//
+//replace (
+//	github.com/kysion/base-library => ../kysion/base-library
+//	github.com/kysion/oss-library => ../kysion/oss-library
+//	github.com/kysion/sms-library => ../kysion/sms-library
+//)

@@ -3,8 +3,8 @@ package sys_enum_upload
 import (
 	"context"
 
-	"github.com/kysion/base-library/utility/enum"
 	"github.com/gogf/gf/v2/frame/g"
+	"github.com/kysion/base-library/utility/enum"
 )
 
 type EventStateEnum enum.IEnumCode[int]
@@ -33,5 +33,5 @@ func (e eventState) New(code int, description string) EventStateEnum {
 	}
 	// 记录无效的enum code，但返回一个默认值而不是panic
 	g.Log().Error(context.Background(), "Upload.EventState.New: 无效的code", g.Map{"code": code, "description": description})
-	return enum.New(code, description) // 返回原始的enum，让调用方决定如何处理
+	return enum.New[EventStateEnum](code, description)
 }
