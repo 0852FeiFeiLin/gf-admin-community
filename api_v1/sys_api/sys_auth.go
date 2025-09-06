@@ -62,14 +62,18 @@ type RefreshTokenReq struct {
 
 type RevokeAllTokensReq struct {
 	g.Meta `path:"/revokeAllTokens" method:"post" summary:"撤销用户所有Token" tags:"鉴权"`
-	UserId int64  `json:"userId" v:"required#用户ID不能为空" dc:"用户ID"`
+	UserId int64 `json:"userId" v:"required#用户ID不能为空" dc:"用户ID"`
 }
 
 type GetActiveTokenCountReq struct {
 	g.Meta `path:"/getActiveTokenCount" method:"get" summary:"获取用户活跃Token数量" tags:"鉴权"`
-	UserId int64  `json:"userId" v:"required#用户ID不能为空" dc:"用户ID"`
+	UserId int64 `json:"userId" v:"required#用户ID不能为空" dc:"用户ID"`
 }
 
 type GetActiveTokenCountRes struct {
 	Count int `json:"count" dc:"活跃Token数量"`
+}
+
+type LogoutReq struct {
+	g.Meta `path:"/logout" method:"post" summary:"退出登陆" tags:"鉴权"`
 }

@@ -2,6 +2,7 @@ package sys_controller
 
 import (
 	"context"
+
 	"github.com/SupenBysz/gf-admin-community/api_v1"
 	"github.com/SupenBysz/gf-admin-community/api_v1/sys_api"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
@@ -159,12 +160,6 @@ func (c *cSysUser) GetUserById(ctx context.Context, req *sys_api.GetUserByIdReq)
 	err = gconv.Struct(user.SysUser, result)
 
 	return result, err
-}
-
-func (c *cSysUser) Logout(ctx context.Context, _ *sys_api.LogoutReq) (res api_v1.BoolRes, err error) {
-	sessionUser := sys_service.SysSession().Get(ctx).JwtClaimsUser
-
-	return sys_service.SysUser().Logout(ctx, sessionUser.Id)
 }
 
 // makeMore 是否订阅附加数据

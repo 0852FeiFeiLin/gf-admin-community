@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/SupenBysz/gf-admin-community/api_v1"
 	"github.com/SupenBysz/gf-admin-community/sys_consts"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
@@ -11,6 +12,7 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_hook"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
+	"github.com/SupenBysz/gf-admin-community/utility/en_crypto"
 	"github.com/SupenBysz/gf-admin-community/utility/idgen"
 	"github.com/SupenBysz/gf-admin-community/utility/security"
 	"github.com/SupenBysz/gf-admin-community/utility/sys_rules"
@@ -27,7 +29,6 @@ import (
 	"github.com/kysion/base-library/base_model/base_enum"
 	"github.com/kysion/base-library/utility/base_verify"
 	"github.com/kysion/base-library/utility/daoctl"
-	"github.com/SupenBysz/gf-admin-community/utility/en_crypto"
 )
 
 type hookInfo sys_model.KeyValueT[int64, sys_hook.AuthHookInfo]
@@ -113,7 +114,7 @@ func (s *sSysAuth) Login(ctx context.Context, req sys_model.LoginInfo, needCaptc
 	if err != nil {
 		return nil, gerror.New(g.I18n().T(ctx, "error_password_incorrect"))
 	}
-	
+
 	// 如果需要更新密码哈希(从scrypt迁移到bcrypt)
 	if needUpdate {
 		// 更新数据库中的密码哈希
@@ -162,7 +163,7 @@ func (s *sSysAuth) InnerLogin(ctx context.Context, user *sys_model.SysUser) (*sy
 		deviceFingerprint = request.Header.Get("X-Device-Fingerprint")
 		userAgent = request.Header.Get("User-Agent")
 		ip = request.GetRemoteIp()
-		
+
 		// 如果没有设备指纹，生成一个
 		if deviceFingerprint == "" {
 			deviceFingerprint = security.GenerateDeviceFingerprint(request)
@@ -711,7 +712,7 @@ func (s *sSysAuth) ResetPassword(ctx context.Context, password string, confirmPa
 	if err != nil {
 		return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "密码加密失败")
 	}
-	
+
 	// 业务层自定义密码加密规则
 	if sys_service.SysUser().GetCryptoPasswordFunc() != nil {
 		pwdHash = sys_service.SysUser().GetCryptoPasswordFunc()(ctx, password, *sysUserInfo.SysUser)
@@ -753,4 +754,17 @@ func (s *sSysAuth) RefreshJwtToken(ctx context.Context, loginUser *sys_model.Jwt
 	result.TokenInfo = *newToken
 
 	return &result, err
+}
+
+// Logout 退出登录
+func (s *sSysAuth) Logout(ctx context.Context, userId int64) (api_v1.BoolRes, error) {
+	_, _ = daoctl.UpdateWithError(
+		sys_dao.SysUserDetail.Ctx(ctx).Where(sys_do.SysUserDetail{Id: userId}),
+		sys_do.SysUserDetail{
+			LastHeartbeatAt: gtime.Now(),
+			IsOnline:        0,
+		},
+	)
+
+	return true, nil
 }

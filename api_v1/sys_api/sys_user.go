@@ -72,7 +72,3 @@ type GetUserByIdReq struct {
 	g.Meta `path:"/getUserById" method:"post" summary:"根据ID获取用户信息" tags:"用户"`
 	UserId int64 `json:"userId" v:"required#用户ID校验失败" dc:"用户ID"`
 }
-
-type LogoutReq struct {
-	g.Meta `path:"/logout" method:"post"`
-}

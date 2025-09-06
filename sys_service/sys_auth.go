@@ -8,6 +8,7 @@ package sys_service
 import (
 	"context"
 
+	"github.com/SupenBysz/gf-admin-community/api_v1"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_hook"
@@ -43,6 +44,8 @@ type (
 		ResetPassword(ctx context.Context, password string, confirmPassword string, idKey string) (bool, error)
 		// RefreshJwtToken 刷新用户jwtToken
 		RefreshJwtToken(ctx context.Context, loginUser *sys_model.JwtCustomClaims) (res *sys_model.LoginRes, err error)
+		// Logout 退出登录
+		Logout(ctx context.Context, userId int64) (api_v1.BoolRes, error)
 	}
 )
 

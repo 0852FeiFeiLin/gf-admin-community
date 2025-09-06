@@ -20,7 +20,6 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_service"
 	"github.com/SupenBysz/gf-admin-community/utility/en_crypto"
 	"github.com/SupenBysz/gf-admin-community/utility/idgen"
-	"github.com/SupenBysz/gf-admin-community/utility/security"
 	"github.com/gogf/gf/v2/container/garray"
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/encoding/gjson"
@@ -1021,18 +1020,18 @@ func (s *sSysUser) SetUserMobile(ctx context.Context, newMobile, captcha, passwo
 	user, _ := daoctl.GetByIdWithError[sys_entity.SysUser](sys_dao.SysUser.Ctx(ctx), userInfo.Id)
 
 	// 如果用户有盐值，使用新的验证方式
-	if user.Salt != "" {
-		err := security.VerifyPasswordWithSalt(ctx, password, user.Password, user.Salt)
-		if err != nil {
-			return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "error_invalid_login_password")
-		}
-	} else {
-		// 兼容旧版本的验证方式
-		pwdHash, _ := en_crypto.PwdHash(password, gconv.String(userId))
-		if pwdHash != user.Password {
-			return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "error_invalid_login_password")
-		}
+	//if user.Salt != "" {
+	//	err := security.VerifyPasswordWithSalt(ctx, password, user.Password, user.Salt)
+	//	if err != nil {
+	//		return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "error_invalid_login_password")
+	//	}
+	//} else {
+	// 兼容旧版本的验证方式
+	pwdHash, _ := en_crypto.PwdHash(password, gconv.String(userId))
+	if pwdHash != user.Password {
+		return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "error_invalid_login_password")
 	}
+	//}
 
 	affected, err := daoctl.UpdateWithError(sys_dao.SysUser.Ctx(ctx).Data(sys_do.SysUser{Mobile: newMobile, UpdatedAt: gtime.Now()}).Where(sys_do.SysUser{
 		Id: userId,
@@ -1080,18 +1079,18 @@ func (s *sSysUser) SetUserMail(ctx context.Context, oldMail, newMail, captcha, p
 	user, _ := daoctl.GetByIdWithError[sys_entity.SysUser](sys_dao.SysUser.Ctx(ctx), userInfo.Id)
 
 	// 如果用户有盐值，使用新的验证方式
-	if user.Salt != "" {
-		err := security.VerifyPasswordWithSalt(ctx, password, user.Password, user.Salt)
-		if err != nil {
-			return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "error_invalid_login_password")
-		}
-	} else {
-		// 兼容旧版本的验证方式
-		pwdHash, _ := en_crypto.PwdHash(password, gconv.String(userId))
-		if pwdHash != user.Password {
-			return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "error_invalid_login_password")
-		}
+	//if user.Salt != "" {
+	//	err := security.VerifyPasswordWithSalt(ctx, password, user.Password, user.Salt)
+	//	if err != nil {
+	//		return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "error_invalid_login_password")
+	//	}
+	//} else {
+	// 兼容旧版本的验证方式
+	pwdHash, _ := en_crypto.PwdHash(password, gconv.String(userId))
+	if pwdHash != user.Password {
+		return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "error_invalid_login_password")
 	}
+	//}
 
 	affected, err := daoctl.UpdateWithError(sys_dao.SysUser.Ctx(ctx).Data(sys_do.SysUser{Email: newMail, UpdatedAt: gtime.Now()}).Where(sys_do.SysUser{
 		Id: userId,
@@ -1171,19 +1170,6 @@ func (s *sSysUser) Heartbeat(ctx context.Context, userId int64) (api_v1.BoolRes,
 	}
 
 	return affected > 0, nil
-}
-
-// Logout 退出登录
-func (s *sSysUser) Logout(ctx context.Context, userId int64) (api_v1.BoolRes, error) {
-	_, _ = daoctl.UpdateWithError(
-		sys_dao.SysUserDetail.Ctx(ctx).Where(sys_do.SysUserDetail{Id: userId}),
-		sys_do.SysUserDetail{
-			LastHeartbeatAt: gtime.Now(),
-			IsOnline:        0,
-		},
-	)
-
-	return true, nil
 }
 
 func (s *sSysUser) masker(user *sys_model.SysUser) *sys_model.SysUser {

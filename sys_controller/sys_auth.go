@@ -2,6 +2,7 @@ package sys_controller
 
 import (
 	"context"
+
 	"github.com/SupenBysz/gf-admin-community/api_v1"
 	sys_api "github.com/SupenBysz/gf-admin-community/api_v1/sys_api"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
@@ -22,6 +23,12 @@ func (c *cAuth) Login(ctx context.Context, req *sys_api.LoginReq) (res *sys_mode
 	}
 
 	return (*sys_model.LoginRes)(result), nil
+}
+
+func (c *cAuth) Logout(ctx context.Context, _ *sys_api.LogoutReq) (res api_v1.BoolRes, err error) {
+	sessionUser := sys_service.SysSession().Get(ctx).JwtClaimsUser
+
+	return sys_service.SysAuth().Logout(ctx, sessionUser.Id)
 }
 
 // LoginByMobile 通过手机号码+验证码登陆
@@ -99,7 +106,7 @@ func (c *cAuth) RefreshToken(ctx context.Context, req *sys_api.RefreshTokenReq) 
 	deviceFingerprint := request.Header.Get("X-Device-Fingerprint")
 	userAgent := request.Header.Get("User-Agent")
 	ip := request.GetRemoteIp()
-	
+
 	result, err := sys_service.Jwt().RefreshTokenWithRotation(ctx, req.Token, deviceFingerprint, userAgent, ip)
 	if err != nil {
 		return nil, err
@@ -123,6 +130,6 @@ func (c *cAuth) GetActiveTokenCount(ctx context.Context, req *sys_api.GetActiveT
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return &sys_api.GetActiveTokenCountRes{Count: count}, nil
 }
